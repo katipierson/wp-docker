@@ -1,0 +1,103 @@
+version: '3.9'
+services:
+  web:
+    image: httpd:latest
+    hostname: apache
+    env_file:
+      - ".env"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+    volumes:
+      - sites:/var/www/html/
+      - sites-available:/usr/local/apache2/conf/sites-available/
+      - apache-conf:/usr/local/apache2/conf/
+      - apache-logs:/usr/local/apache2/logs/
+    links:
+      - mariadb
+      - php
+    environment:
+      - MYSQL_HOST=mysql
+    depends_on:
+      - php
+      - mariadb
+    networks:
+      lamp80:
+        aliases:
+          - localhost
+  php:
+    build: ../../php/80
+    hostname: php
+    env_file:
+      - ".env"
+    volumes:
+      - sites:/var/www/html/
+      - php-conf:/usr/local/etc/
+    expose:
+      - "9000"
+    environment:
+      - MYSQL_HOST=mysql
+    networks:
+      - lamp80
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "localhost:192.168.178.24"
+  mariadb:
+    image: mariadb:latest
+    hostname: mariadb
+    command: --max_allowed_packet=130023424
+    ports:
+      - "3306:3306"
+    env_file:
+      - ".env"
+    volumes:
+      - mariadb:/var/lib/mysql/
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - lamp80
+networks:
+  lamp80:
+    driver: bridge
+volumes:
+  sites:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../../Sites/
+  sites-available:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../apache/conf/sites-available/
+  apache-conf:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../apache/conf/
+  apache-logs:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../apache/logs/
+  mariadb:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../mariadb/
+  php-conf:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./../../../php/80/conf/

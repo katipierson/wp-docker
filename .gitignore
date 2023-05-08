@@ -1,0 +1,8 @@
+# Ignorieren von Dateien
+/mariadb/*
+/portainer/
+/apache/logs/*
+
+# Nicht ignorieren von Dateien
+!/mariadb/.gitkeep
+!/apache/logs/.gitkeep
