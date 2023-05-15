@@ -2,6 +2,8 @@
 
 * Nicht gleichzeitig starten!
 
+docker-compose.yml in lamp & lemp
+
 ## Versionsstand am 13.01.2023
 
 * Nginx 1.23.x
